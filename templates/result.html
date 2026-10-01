@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodLens - Prediction Result</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            color: #26352b;
+
+            background:
+                radial-gradient(
+                    circle at 5% 15%,
+                    rgba(255, 193, 7, 0.10) 0 90px,
+                    transparent 91px
+                ),
+                radial-gradient(
+                    circle at 95% 20%,
+                    rgba(76, 175, 80, 0.10) 0 110px,
+                    transparent 111px
+                ),
+                linear-gradient(
+                    135deg,
+                    #fffdf5,
+                    #f3faf4
+                );
+
+            overflow-x: hidden;
+        }
+
+
+        /* ==========================================
+           FLOATING FOOD BACKGROUND
+        ========================================== */
+
+        .food {
+            position: fixed;
+            font-size: 55px;
+            opacity: 0.14;
+            pointer-events: none;
+            user-select: none;
+            animation: floatFood 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .food1 {
+            top: 10%;
+            left: 4%;
+        }
+
+        .food2 {
+            top: 18%;
+            right: 5%;
+            animation-delay: 1s;
+        }
+
+        .food3 {
+            bottom: 15%;
+            left: 5%;
+            animation-delay: 2s;
+        }
+
+        .food4 {
+            bottom: 8%;
+            right: 6%;
+            animation-delay: 3s;
+        }
+
+        @keyframes floatFood {
+
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-18px) rotate(5deg);
+            }
+        }
+
+
+        /* ==========================================
+           MAIN CONTAINER
+        ========================================== */
+
+        .container {
+            width: 92%;
+            max-width: 1000px;
+            margin: 35px auto;
+            position: relative;
+            z-index: 2;
+        }
+
+
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 42px;
+        }
+
+        .header h1 {
+            margin-top: 5px;
+            color: #28603a;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin-top: 8px;
+            color: #718078;
+        }
+
+
+        /* ==========================================
+           MAIN CARD
+        ========================================== */
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow:
+                0 15px 45px rgba(45, 80, 55, 0.12);
+
+            border: 1px solid rgba(60, 110, 70, 0.12);
+        }
+
+
+        /* ==========================================
+           FOOD RESULT SECTION
+        ========================================== */
+
+        .food-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .image-section {
+            text-align: center;
+        }
+
+        .food-image {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            object-fit: cover;
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.12);
+
+            border: 5px solid white;
+        }
+
+
+        /* ==========================================
+           PREDICTION
+        ========================================== */
+
+        .prediction-section {
+            padding: 10px;
+        }
+
+        .recognized-label {
+            display: inline-block;
+
+            padding: 7px 14px;
+
+            border-radius: 20px;
+
+            background: #e7f5e9;
+            color: #2d7841;
+
+            font-size: 13px;
+            font-weight: bold;
+
+            margin-bottom: 15px;
+        }
+
+        .prediction-section h2 {
+            font-size: 34px;
+            color: #275f38;
+
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .prediction-description {
+            color: #718078;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+
+        /* ==========================================
+           CONFIDENCE
+        ========================================== */
+
+        .confidence-box {
+            background: #f5faf6;
+            padding: 18px;
+            border-radius: 15px;
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .confidence-value {
+            color: #34834b;
+        }
+
+        .progress {
+            height: 10px;
+            background: #dfe9e1;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+
+            width: {{ confidence }}%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #70ad7c,
+                    #2f7d45
+                );
+
+            border-radius: 20px;
+
+            animation: progressAnimation 1.2s ease;
+        }
+
+        @keyframes progressAnimation {
+
+            from {
+                width: 0;
+            }
+
+            to {
+                width: {{ confidence }}%;
+            }
+        }
+
+
+        /* ==========================================
+           SERVING INFO
+        ========================================== */
+
+        .serving-box {
+            margin-top: 15px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 15px 18px;
+
+            border-radius: 13px;
+
+            background: #fff8e4;
+        }
+
+        .serving-box span:first-child {
+            color: #74643d;
+        }
+
+        .serving-value {
+            font-weight: bold;
+            color: #8a6b22;
+        }
+
+
+        /* ==========================================
+           NUTRITION SECTION
+        ========================================== */
+
+        .nutrition-section {
+            margin-top: 35px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            color: #285d38;
+            font-size: 25px;
+        }
+
+        .section-title p {
+            color: #7b867e;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+
+        /* ==========================================
+           NUTRITION GRID
+        ========================================== */
+
+        .nutrition-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 14px;
+        }
+
+        .nutrition-card {
+            padding: 20px 10px;
+
+            text-align: center;
+
+            border-radius: 16px;
+
+            background: #f8faf8;
+
+            border: 1px solid #e7eee8;
+
+            transition: 0.3s;
+        }
+
+        .nutrition-card:hover {
+            transform: translateY(-5px);
+
+            box-shadow:
+                0 8px 20px rgba(50, 90, 60, 0.10);
+        }
+
+        .nutrition-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .nutrition-value {
+            font-size: 22px;
+            font-weight: bold;
+
+            color: #2f7042;
+
+            margin-bottom: 5px;
+        }
+
+        .nutrition-name {
+            font-size: 13px;
+            color: #748078;
+        }
+
+
+        /* ==========================================
+           CALORIE HIGHLIGHT
+        ========================================== */
+
+        .calorie-card {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff5d9,
+                    #fffaf0
+                );
+
+            border-color: #f1dfaa;
+        }
+
+        .calorie-card .nutrition-value {
+            color: #c47b18;
+        }
+
+
+        /* ==========================================
+           INFORMATION BOX
+        ========================================== */
+
+        .info-box {
+            margin-top: 25px;
+
+            padding: 18px;
+
+            background: #eef7ef;
+
+            border-left: 4px solid #4d925c;
+
+            border-radius: 10px;
+
+            color: #607066;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+
+        /* ==========================================
+           BUTTONS
+        ========================================== */
+
+        .actions {
+            display: flex;
+
+            gap: 15px;
+
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+
+            text-align: center;
+
+            padding: 14px;
+
+            border-radius: 11px;
+
+            text-decoration: none;
+
+            font-weight: bold;
+
+            transition: 0.25s;
+        }
+
+        .primary-btn {
+            background:
+                linear-gradient(
+                    135deg,
+                    #3e8d52,
+                    #28683b
+                );
+
+            color: white;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 8px 20px rgba(40, 104, 59, 0.25);
+        }
+
+        .secondary-btn {
+            background: #edf4ee;
+            color: #376344;
+        }
+
+        .secondary-btn:hover {
+            background: #e0eee2;
+        }
+
+
+        /* ==========================================
+           FOOTER
+        ========================================== */
+
+        .footer {
+            text-align: center;
+
+            margin-top: 20px;
+
+            color: #8a948d;
+
+            font-size: 12px;
+        }
+
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 850px) {
+
+            .food-result {
+                grid-template-columns: 1fr;
+            }
+
+            .prediction-section {
+                text-align: center;
+            }
+
+            .nutrition-grid {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+        }
+
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: 94%;
+                margin: 20px auto;
+            }
+
+            .result-card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 27px;
+            }
+
+            .food-image {
+                height: 250px;
+            }
+
+            .prediction-section h2 {
+                font-size: 28px;
+            }
+
+            .nutrition-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .food {
+                font-size: 35px;
+            }
+        }
+
+
+        @media (max-width: 380px) {
+
+            .nutrition-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ==========================================
+         FLOATING FOOD BACKGROUND
+    =========================================== -->
+
+    <div class="food food1">🍛</div>
+    <div class="food food2">🥗</div>
+    <div class="food food3">🍚</div>
+    <div class="food food4">🍮</div>
+
+
+    <!-- ==========================================
+         MAIN CONTAINER
+    =========================================== -->
+
+    <div class="container">
+
+
+        <!-- Header -->
+
+        <div class="header">
+
+            <div class="logo">
+                🍽️
+            </div>
+
+            <h1>
+                FoodLens
+            </h1>
+
+            <p>
+                Your Food Recognition & Nutrition Result
+            </p>
+
+        </div>
+
+
+        <!-- Main Result Card -->
+
+        <div class="result-card">
+
+
+            <!-- ======================================
+                 FOOD RESULT
+            ======================================= -->
+
+            <div class="food-result">
+
+
+                <!-- Image -->
+
+                <div class="image-section">
+
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + image_file) }}"
+                        alt="Uploaded food image"
+                        class="food-image"
+                    >
+
+                </div>
+
+
+                <!-- Prediction -->
+
+                <div class="prediction-section">
+
+                    <span class="recognized-label">
+                        ✓ FOOD RECOGNIZED
+                    </span>
+
+                    <h2>
+                        {{ food_name.replace('_', ' ').title() }}
+                    </h2>
+
+                    <p class="prediction-description">
+                        Our deep learning model identified
+                        the uploaded image as this food item.
+                    </p>
+
+
+                    <!-- Confidence -->
+
+
+                    <!-- Serving -->
+
+                    <div class="serving-box">
+
+                        <span>
+                            🍴 Serving Size
+                        </span>
+
+                        <span class="serving-value">
+                            {{ "%.0f"|format(serving) }} g
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ======================================
+                 NUTRITION
+            ======================================= -->
+
+            <div class="nutrition-section">
+
+
+                <div class="section-title">
+
+                    <h2>
+                        🥗 Nutrition Information
+                    </h2>
+
+                    <p>
+                        Estimated nutritional values for
+                        your selected serving size
+                    </p>
+
+                </div>
+
+
+                <div class="nutrition-grid">
+
+
+                    <!-- Calories -->
+
+                    <div class="nutrition-card calorie-card">
+
+                        <div class="nutrition-icon">
+                            🔥
+                        </div>
+
+                        <div class="nutrition-value">
+                            {{ "%.2f"|format(calories) }}
+                        </div>
+
+                        <div class="nutrition-name">
+                            Calories (kcal)
+                        </div>
+
+                    </div>
+
+
+                    <!-- Protein -->
+
+                    <div class="nutrition-card">
+
+                        <div class="nutrition-icon">
+                            💪
+                        </div>
+
+                        <div class="nutrition-value">
+                            {{ "%.2f"|format(protein) }} g
+                        </div>
+
+                        <div class="nutrition-name">
+                            Protein
+                        </div>
+
+                    </div>
+
+
+                    <!-- Carbohydrates -->
+
+                    <div class="nutrition-card">
+
+                        <div class="nutrition-icon">
+                            🌾
+                        </div>
+
+                        <div class="nutrition-value">
+                            {{ "%.2f"|format(carbs) }} g
+                        </div>
+
+                        <div class="nutrition-name">
+                            Carbohydrates
+                        </div>
+
+                    </div>
+
+
+                    <!-- Fat -->
+
+                    <div class="nutrition-card">
+
+                        <div class="nutrition-icon">
+                            🥑
+                        </div>
+
+                        <div class="nutrition-value">
+                            {{ "%.2f"|format(fat) }} g
+                        </div>
+
+                        <div class="nutrition-name">
+                            Fat
+                        </div>
+
+                    </div>
+
+
+                    <!-- Fiber -->
+
+                    <div class="nutrition-card">
+
+                        <div class="nutrition-icon">
+                            🌿
+                        </div>
+
+                        <div class="nutrition-value">
+                            {{ "%.2f"|format(fiber) }} g
+                        </div>
+
+                        <div class="nutrition-name">
+                            Fiber
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ==================================
+                     INFORMATION
+                =================================== -->
+
+                <div class="info-box">
+
+                    <strong>ℹ️ Note:</strong>
+
+                    The nutritional values shown are
+                    estimated reference values based on
+                    the nutrition dataset used by this
+                    project. Actual values may vary
+                    depending on ingredients, preparation
+                    method, and portion size.
+
+                </div>
+
+
+                <!-- ==================================
+                     ACTION BUTTONS
+                =================================== -->
+
+                <div class="actions">
+
+                    <a
+                        href="/"
+                        class="btn primary-btn"
+                    >
+                        🔄 Analyze Another Food
+                    </a>
+
+                    <a
+                        href="/"
+                        class="btn secondary-btn"
+                    >
+                        🏠 Home
+                    </a>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- Footer -->
+
+        <div class="footer">
+
+            FoodLens • AI-Based Food Recognition &
+            Calorie Estimation
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         INTERACTIVE JAVASCRIPT
+    =========================================== -->
+
+    <script>
+
+        // Animate nutrition cards when page loads
+
+        const cards =
+            document.querySelectorAll(".nutrition-card");
+
+
+        cards.forEach(
+            function(card, index) {
+
+                card.style.opacity = "0";
+
+                card.style.transform =
+                    "translateY(15px)";
+
+
+                setTimeout(
+                    function() {
+
+                        card.style.transition =
+                            "all 0.5s ease";
+
+                        card.style.opacity = "1";
+
+                        card.style.transform =
+                            "translateY(0)";
+
+                    },
+                    150 * index
+                );
+
+            }
+        );
+
+
+        // Confidence message
+
+        const confidence =
+            {{ confidence }};
+
+
+        if (confidence < 40) {
+
+            console.log(
+                "Low confidence prediction"
+            );
+
+        }
+        else if (confidence < 70) {
+
+            console.log(
+                "Moderate confidence prediction"
+            );
+
+        }
+        else {
+
+            console.log(
+                "High confidence prediction"
+            );
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>

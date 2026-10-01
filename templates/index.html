@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodLens - Food Recognition</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            color: #24352b;
+            overflow-x: hidden;
+
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255, 193, 7, 0.12) 0 80px, transparent 81px),
+                radial-gradient(circle at 90% 15%, rgba(76, 175, 80, 0.12) 0 100px, transparent 101px),
+                radial-gradient(circle at 15% 85%, rgba(255, 152, 0, 0.10) 0 120px, transparent 121px),
+                linear-gradient(135deg, #fffdf5, #f4fbf5);
+        }
+
+        /* Decorative food elements */
+
+        .food {
+            position: fixed;
+            font-size: 55px;
+            opacity: 0.16;
+            pointer-events: none;
+            user-select: none;
+            animation: float 5s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .food1 {
+            top: 10%;
+            left: 5%;
+        }
+
+        .food2 {
+            top: 18%;
+            right: 6%;
+            animation-delay: 1s;
+        }
+
+        .food3 {
+            bottom: 12%;
+            left: 7%;
+            animation-delay: 2s;
+        }
+
+        .food4 {
+            bottom: 8%;
+            right: 8%;
+            animation-delay: 3s;
+        }
+
+        .food5 {
+            top: 50%;
+            left: 2%;
+            animation-delay: 1.5s;
+        }
+
+        .food6 {
+            top: 55%;
+            right: 2%;
+            animation-delay: 2.5s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+        }
+
+        /* Main container */
+
+        .container {
+            width: 92%;
+            max-width: 850px;
+            margin: 40px auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 45px;
+            margin-bottom: 5px;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            color: #245c38;
+        }
+
+        .header p {
+            margin-top: 10px;
+            color: #66756b;
+            font-size: 16px;
+        }
+
+        .tagline {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            background: #e7f5e9;
+            color: #2e7d45;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* Main card */
+
+        .card {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(70, 120, 80, 0.15);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 15px 45px rgba(45, 80, 55, 0.12);
+        }
+
+        /* Upload area */
+
+        .upload-area {
+            border: 2px dashed #78a982;
+            border-radius: 18px;
+            padding: 40px 25px;
+            text-align: center;
+            background: #f8fcf8;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            background: #eef8ef;
+            border-color: #3f8751;
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 12px;
+        }
+
+        .upload-area h2 {
+            color: #2d633d;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            color: #78857c;
+            font-size: 14px;
+        }
+
+        .choose-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            border-radius: 25px;
+            background: #39824d;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .choose-btn:hover {
+            background: #2d6d40;
+        }
+
+        #image {
+            display: none;
+        }
+
+        /* Preview */
+
+        .preview-container {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preview-container img {
+            width: 100%;
+            max-width: 300px;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 15px;
+            border: 3px solid #e0eee2;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            color: #68756c;
+            font-size: 13px;
+        }
+
+        /* Serving section */
+
+        .serving-section {
+            margin-top: 25px;
+        }
+
+        .serving-section label {
+            display: block;
+            font-weight: bold;
+            color: #36533e;
+            margin-bottom: 9px;
+        }
+
+        .serving-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .serving-input input {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #cbd8ce;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .serving-input input:focus {
+            border-color: #4d8d5b;
+        }
+
+        .unit {
+            font-weight: bold;
+            color: #617168;
+        }
+
+        /* Submit */
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3d8b52, #27683a);
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 104, 58, 0.25);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Features */
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .feature {
+            padding: 18px 10px;
+            text-align: center;
+            background: #f7faf7;
+            border-radius: 14px;
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .feature h3 {
+            font-size: 14px;
+            color: #35513d;
+        }
+
+        .feature p {
+            font-size: 12px;
+            color: #7b867e;
+            margin-top: 5px;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 22px;
+            color: #89948d;
+            font-size: 12px;
+        }
+
+        @media (max-width: 650px) {
+
+            .container {
+                margin: 25px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 27px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .food {
+                font-size: 35px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Decorative food background -->
+
+    <div class="food food1">🍛</div>
+    <div class="food food2">🥗</div>
+    <div class="food food3">🍚</div>
+    <div class="food food4">🍲</div>
+    <div class="food food5">🥘</div>
+    <div class="food food6">🍮</div>
+
+
+    <div class="container">
+
+        <!-- Header -->
+
+        <div class="header">
+
+            <div class="logo">🍽️</div>
+
+            <h1>FoodLens</h1>
+
+            <p>
+                AI-Powered Indian Food Recognition & Calorie Estimation
+            </p>
+
+            <span class="tagline">
+                🧠 Powered by Deep Learning
+            </span>
+
+        </div>
+
+
+        <!-- Main Card -->
+
+        <div class="card">
+
+            <form
+                action="/predict"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                <!-- Upload -->
+
+                <div
+                    class="upload-area"
+                    id="uploadArea"
+                >
+
+                    <div class="upload-icon">
+                        📸
+                    </div>
+
+                    <h2>
+                        What's on your plate?
+                    </h2>
+
+                    <p>
+                        Upload an image of an Indian food item
+                    </p>
+
+                    <p>
+                        or drag & drop your image here
+                    </p>
+
+                    <label
+                        for="image"
+                        class="choose-btn"
+                    >
+                        Choose Food Image
+                    </label>
+
+                    <input
+                        type="file"
+                        id="image"
+                        name="image"
+                        accept="image/*"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Image Preview -->
+
+                <div
+                    class="preview-container"
+                    id="previewContainer"
+                >
+
+                    <img
+                        id="preview"
+                        src=""
+                        alt="Selected food preview"
+                    >
+
+                    <p
+                        class="file-name"
+                        id="fileName"
+                    ></p>
+
+                </div>
+
+
+                <!-- Serving Size -->
+
+                <div class="serving-section">
+
+                    <label for="serving">
+                        🍴 Serving Size
+                    </label>
+
+                    <div class="serving-input">
+
+                        <input
+                            type="number"
+                            id="serving"
+                            name="serving"
+                            value="100"
+                            min="1"
+                            max="2000"
+                            required
+                        >
+
+                        <span class="unit">
+                            grams
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Submit -->
+
+                <button
+                    type="submit"
+                    class="submit-btn"
+                    id="submitBtn"
+                    disabled
+                >
+                    🔍 Recognize My Food
+                </button>
+
+            </form>
+
+
+            <!-- Features -->
+
+            <div class="features">
+
+                <div class="feature">
+
+                    <div class="feature-icon">
+                        
+
+
+                <div class="feature">
+
+                    <div class="feature-icon">
+                        🔥
+                    </div>
+
+                    <h3>
+                        Calorie Estimate
+                    </h3>
+
+                    <p>
+                        Based on serving size
+                    </p>
+
+                </div>
+
+
+                <div class="feature">
+
+                    <div class="feature-icon">
+                        🥗
+                    </div>
+
+                    <h3>
+                        Nutrition Info
+                    </h3>
+
+                    <p>
+                        Protein, carbs & fat
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <p class="footer-note">
+                Nutrition values are reference estimates and may vary
+                depending on ingredients and preparation.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Interactive JavaScript -->
+
+    <script>
+
+        const imageInput = document.getElementById("image");
+        const uploadArea = document.getElementById("uploadArea");
+        const previewContainer = document.getElementById("previewContainer");
+        const preview = document.getElementById("preview");
+        const fileName = document.getElementById("fileName");
+        const submitBtn = document.getElementById("submitBtn");
+
+
+        // ----------------------------------------------------
+        // IMAGE SELECTION
+        // ----------------------------------------------------
+
+        imageInput.addEventListener("change", function () {
+
+            const file = this.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            showPreview(file);
+
+        });
+
+
+        // ----------------------------------------------------
+        // SHOW IMAGE PREVIEW
+        // ----------------------------------------------------
+
+        function showPreview(file) {
+
+            if (!file.type.startsWith("image/")) {
+
+                alert("Please select a valid image file.");
+
+                imageInput.value = "";
+
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+
+                preview.src = event.target.result;
+
+                previewContainer.style.display = "block";
+
+                fileName.textContent =
+                    "Selected image: " + file.name;
+
+                submitBtn.disabled = false;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+
+        // ----------------------------------------------------
+        // DRAG AND DROP
+        // ----------------------------------------------------
+
+        uploadArea.addEventListener(
+            "dragover",
+            function (event) {
+
+                event.preventDefault();
+
+                uploadArea.classList.add("dragover");
+
+            }
+        );
+
+
+        uploadArea.addEventListener(
+            "dragleave",
+            function () {
+
+                uploadArea.classList.remove("dragover");
+
+            }
+        );
+
+
+        uploadArea.addEventListener(
+            "drop",
+            function (event) {
+
+                event.preventDefault();
+
+                uploadArea.classList.remove("dragover");
+
+                const file = event.dataTransfer.files[0];
+
+                if (file) {
+
+                    // Put dropped file into the file input
+                    const dataTransfer = new DataTransfer();
+
+                    dataTransfer.items.add(file);
+
+                    imageInput.files = dataTransfer.files;
+
+                    showPreview(file);
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
